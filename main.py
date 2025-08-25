@@ -1,11 +1,14 @@
 import re
 import pandas as pd
 from transformers import pipeline
+from src.data_preprocess import preprocess_reviews
 
 df = pd.read_csv("data/reviews.csv")
 
 print("Columns in dataset:", df.columns)
 review_col = "text" if "text" in df.columns else df.columns[0]
+
+df = preprocess_reviews("data/reviews.csv", "data/google_reviews_cleaned.csv")
 
 reviews = df[review_col].dropna().sample(10, random_state=42).tolist()
 
