@@ -1,30 +1,29 @@
-import re
-import pandas as pd
-from transformers import pipeline
+# main.py
 
-df = pd.read_csv("data/reviews.csv")
+from src.data_preprocessing import load_data, tokenize_data, split_data
+from src.model_training import load_model, setup_training_args, train_model
+from transformers import BertTokenizer
 
-print("Columns in dataset:", df.columns)
-review_col = "text" if "text" in df.columns else df.columns[0]
+# Step 1: Load data
+df = load_data("data/reviews.csv")
 
-reviews = df[review_col].dropna().sample(10, random_state=42).tolist()
+# Step 2: Tokenize data
+tokenizer = BertTokenizer.from_pretrained('bert-base-uncased')
+train_encodings = tokenize_data(df[:80], tokenizer)  # 80% for training
+val_encodings = tokenize_data(df[80:], tokenizer)    # 20% for validation
 
-labels = ["advertisement", "irrelevant", "rant_without_visit", "valid_review"]
+# Step 3: Split data into train and validation sets (already done)
+train_df, val_df = split_data(df)
 
-print("Loading Hugging Face model... (first time may take a minute)")
-classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
+# Step 4: Load the pre-trained BERT model
+model = load_model(num_labels=4)  # Assume 4 categories
 
-def contains_ad(review: str) -> bool:
-    return bool(re.search(r"(http|www|\.com|discount|promo)", review.lower()))
+# Step 5: Set up the training arguments
+training_args = setup_training_args()
 
-for review in reviews:
-    result = classifier(review, labels)
-    predicted_label = result["labels"][0]
-    confidence = result["scores"][0]
+# Step 6: Train the model
+trainer = train_model(model, training_args, train_encodings, val_encodings)
 
-    if contains_ad(review):
-        predicted_label = "advertisement (regex rule)"
+# Step 7: Save the trained model
+trainer.save_model("./final_model")
 
-    print("\n---")
-    print(f"Review: {review}")
-    print(f"Predicted: {predicted_label} (confidence {confidence:.2f})")
