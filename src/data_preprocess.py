@@ -31,6 +31,7 @@ def preprocess_reviews(file_path, output_path):
 
     df.to_csv(output_path, index=False)
     print(f"Saved cleaned dataset to {output_path} with {len(df)} reviews.")
+    return df
 
 if __name__ == "__main__":
     preprocess_reviews("data/reviews.csv", "data/google_reviews_cleaned.csv")
