@@ -39,6 +39,8 @@ def preprocess_reviews(file_path, output_path):
     df = pd.read_csv(file_path)
     review_col = "text" if "text" in df.columns else df.columns[0]
 
+    df = df[~df[review_col].str.contains(r"http|www|\.com", regex=True, na=False)]
+
     df = df.dropna(subset=[review_col])
     df = df.drop_duplicates(subset=[review_col])
 
