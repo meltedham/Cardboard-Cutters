@@ -26,7 +26,8 @@ def preview_cleaning(df, review_col, output_path, n=20):
     print("\n=== Preview of Cleaning ===")
     for i, row in df.head(n).iterrows():
         original = row[review_col]
-        cleaned = remove_non_english(remove_stopwords(clean_text(original)))
+        # cleaned = remove_non_english(remove_stopwords(clean_text(original)))
+        cleaned = remove_non_english(clean_text(original))  # Stopwords NOT removed
         preview_rows.append({"original": original, "cleaned": cleaned})
         print(f"\nOriginal: {original}\nCleaned : {cleaned}")
 
@@ -47,7 +48,7 @@ def preprocess_reviews(file_path, output_path):
     preview_cleaning(df, review_col, output_path, n=20)
 
     df[review_col] = df[review_col].apply(clean_text)
-    df[review_col] = df[review_col].apply(remove_stopwords)
+    # df[review_col] = df[review_col].apply(remove_stopwords)  # Remove this line
     df[review_col] = df[review_col].apply(remove_non_english)
 
     df = df[df[review_col].str.split().str.len() >= 3]
@@ -55,3 +56,8 @@ def preprocess_reviews(file_path, output_path):
     df.to_csv(output_path, index=False)
     print(f"Saved cleaned dataset to {output_path} with {len(df)} reviews.")
     return df
+
+if __name__ == "__main__":
+    input_file = "../data/reviews.csv"      # Change this to your input CSV file
+    output_file = "../data/reviews_cleaned.csv"    # Change this to your desired output CSV file
+    preprocess_reviews(input_file, output_file)
