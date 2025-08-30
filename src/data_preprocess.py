@@ -1,5 +1,6 @@
 import pandas as pd
 import re
+from pathlib import Path
 
 def clean_text(text):
     if pd.isnull(text):
@@ -13,7 +14,6 @@ def clean_text(text):
     return text.strip()
 
 def preview_cleaning(df, review_col, output_path, n=20):
-    """Show sample of original vs cleaned reviews."""
     preview_rows = []
     print("\n=== Preview of Cleaning ===")
     for i, row in df.head(n).iterrows():
@@ -22,8 +22,9 @@ def preview_cleaning(df, review_col, output_path, n=20):
         preview_rows.append({"original": original, "cleaned": cleaned})
         print(f"\nOriginal: {original}\nCleaned : {cleaned}")
 
+    # Convert Path to string for string replacement
+    preview_file = Path(str(output_path).replace(".csv", "_preview.csv"))
     preview_df = pd.DataFrame(preview_rows)
-    preview_file = output_path.replace(".csv", "_preview.csv")
     preview_df.to_csv(preview_file, index=False)
     print(f"\nSaved cleaning preview to {preview_file}")
 
