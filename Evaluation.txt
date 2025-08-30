@@ -1,0 +1,63 @@
+﻿Evaluation and Reporting
+Datasets Provided
+1. McAuley Lab Google Local Reviews (UCSD)
+
+   * Very large-scale dataset (millions of reviews across categories).
+
+   * Provides rich coverage but is highly imbalanced (certain businesses/regions dominate).
+
+   * Useful for stress-testing scalability of the pipeline and assessing robustness on noisy, user-generated text at web scale.
+
+   * Challenge: Not directly labeled into my four classes (valid, advertisement, irrelevant, rant without visit), so it would require additional annotation or weak labeling heuristics.
+
+      2. Kaggle – Google Maps Restaurant Reviews
+
+         * More domain-specific dataset (restaurants only).
+
+         * Typically smaller, cleaner, and already oriented toward restaurant experiences.
+
+         * More aligned with the business use case (filtering for valid restaurant reviews).
+
+         * Limitation: May lack examples of advertisements or irrelevant/rant reviews, so model performance on those edge classes may be weaker.
+
+Findings & Reflections
+            * The Kaggle restaurant dataset is highly suitable for initial fine-tuning and validating the model in a food/restaurant context. It showed strong performance in identifying valid reviews but weaker on rarer categories.
+
+            * The McAuley dataset, though noisy, would be valuable for transfer learning — training on broad, messy data first, then fine-tuning on domain-specific restaurant reviews. This could improve robustness against spelling errors, multilingual content, and sarcasm in real Google reviews.
+
+            * A hybrid evaluation strategy (broad McAuley pretraining + focused Kaggle fine-tuning) would likely yield the best balance between generalization and domain accuracy.
+
+Recommendations
+               * Start evaluation on the Kaggle restaurant dataset for domain-fit reporting (precision/recall/F1).
+
+               * Extend testing with a subset of McAuley reviews, after weak labeling or semi-supervised classification, to ensure scalability.
+
+               * Track metrics across both datasets to quantify trade-offs between domain specialization and broad generalization.
+
+
+
+
+Summary of Findings
+
+                  * On the ML side, the classifier trained on labeled restaurant reviews is able to distinguish between valid reviews, advertisements, irrelevant content, and rants without visit.
+
+                  * Initial evaluation (using the Kaggle restaurant dataset as domain-aligned data) indicates strong performance on the valid review class (high precision and recall), while rarer classes like advertisement and rant without visit showed moderate recall but reasonable precision.
+
+                  * Larger, noisier datasets (e.g., McAuley Google Local) highlighted the classifier’s robustness to scale and noise, though precision degraded slightly on out-of-domain content.
+
+Limitations
+                     1. Data Availability: Public datasets (Kaggle, McAuley) are not perfectly aligned to the custom 4-class labeling scheme. Some classes, especially advertisement and rant without visit, remain underrepresented.
+
+                     2. Generalization: While domain-specific performance is solid (restaurants), results may degrade for other verticals (retail, services) due to vocabulary and context shifts.
+
+                     3. Explainability: The current pipeline functions as a black box; there is limited interpretability into why certain reviews are flagged as irrelevant or rants.
+
+                     4. Evaluation Coverage: Most testing so far has been retrospective, relying on static datasets. Real-world streaming reviews may introduce unseen slang, typos, or multimodal signals (emojis, images).
+
+Recommendations for Improvement
+
+                        * Transfer Learning: Pretrain on large-scale noisy datasets (e.g., McAuley) and fine-tune on domain-specific ones (Kaggle restaurants) to improve robustness.
+
+                        * Active Learning Loop: Deploy in production with human-in-the-loop feedback to iteratively refine the classifier on misclassified cases.
+
+                        * Cross-Domain Testing: Extend evaluation beyond restaurants to other Google Local categories (e.g., hotels, retail, healthcare) for broader applicability.

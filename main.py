@@ -1,30 +1,20 @@
-import re
+import joblib
 import pandas as pd
-from transformers import pipeline
 
-df = pd.read_csv("data/reviews.csv")
+MODEL = "models/baseline_lr.joblib"
+INPUT = "data/google_reviews_cleaned.csv"   # or any new file of raw reviews
+TEXT_COL = "text"
 
-print("Columns in dataset:", df.columns)
-review_col = "text" if "text" in df.columns else df.columns[0]
+def predict_batch(csv_path, n=10):
+    pipe = joblib.load(MODEL)
+    df = pd.read_csv(csv_path)
+    col = TEXT_COL if TEXT_COL in df.columns else df.columns[0]
+    texts = df[col].dropna().sample(min(n, len(df)), random_state=42).astype(str)
+    preds = pipe.predict(texts)
+    for t, p in zip(texts, preds):
+        print("\n---")
+        print("Review:", t)
+        print("Pred  :", p)
 
-reviews = df[review_col].dropna().sample(10, random_state=42).tolist()
-
-labels = ["advertisement", "irrelevant", "rant_without_visit", "valid_review"]
-
-print("Loading Hugging Face model... (first time may take a minute)")
-classifier = pipeline("zero-shot-classification", model="facebook/bart-large-mnli")
-
-def contains_ad(review: str) -> bool:
-    return bool(re.search(r"(http|www|\.com|discount|promo)", review.lower()))
-
-for review in reviews:
-    result = classifier(review, labels)
-    predicted_label = result["labels"][0]
-    confidence = result["scores"][0]
-
-    if contains_ad(review):
-        predicted_label = "advertisement (regex rule)"
-
-    print("\n---")
-    print(f"Review: {review}")
-    print(f"Predicted: {predicted_label} (confidence {confidence:.2f})")
+if __name__ == "__main__":
+    predict_batch(INPUT, n=10)
