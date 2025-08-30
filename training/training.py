@@ -5,8 +5,18 @@ import torch
 from datasets import Dataset
 
 # Load data
-df = pd.read_csv("../data/reviews.csv")
+df = pd.read_csv("../data/reviews_labeled.csv")
 df = df.dropna(subset=["text", "label"])
+
+# Encode labels
+label2id = {
+    "valid review": 0,
+    "advertisement": 1,
+    "irrelevant": 2,
+    "rant without visit": 3,
+}
+id2label = {v: k for k, v in label2id.items()}
+df["label"] = df["label"].map(label2id)
 
 # Train/val split
 train_df, val_df = train_test_split(df, test_size=0.2, random_state=42)
@@ -17,7 +27,12 @@ val_dataset = Dataset.from_pandas(val_df)
 
 # Load tokenizer and model
 tokenizer = BertTokenizerFast.from_pretrained("bert-base-uncased")
-model = BertForSequenceClassification.from_pretrained("bert-base-uncased", num_labels=len(df["label"].unique()))
+model = BertForSequenceClassification.from_pretrained(
+    "bert-base-uncased",
+    num_labels=len(label2id),
+    id2label=id2label,
+    label2id=label2id,
+)
 
 # Tokenization function
 def tokenize(batch):
@@ -36,10 +51,6 @@ training_args = TrainingArguments(
     num_train_epochs=3,
     per_device_train_batch_size=8,
     per_device_eval_batch_size=8,
-    evaluation_strategy="epoch",
-    save_strategy="epoch",
-    load_best_model_at_end=True,
-    metric_for_best_model="accuracy",
     logging_dir="./logs",
     logging_steps=50,
 )
