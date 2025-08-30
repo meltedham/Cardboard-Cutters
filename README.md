@@ -71,8 +71,6 @@ Cleaning:
 - Reviews less than 3 words removed
 - Duplicate reviews removed
 
-Next, it assigns a float value on the possibility of each review being AI-generated. Lastly, the model assigns tags to the reviews based on the violations above.
-
 This effectively detects irrelevant content and labels them as such, filtering out the "noisy" reviews.
 
 We mainly used Python as our main language for writing the program and training the model. VS Code was our editor of choice as it is modular and easy to set up. We also used GitHub for version control and code review.
